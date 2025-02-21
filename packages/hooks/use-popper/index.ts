@@ -99,7 +99,10 @@ export const usePopper = (
   onBeforeUnmount(() => {
     destroy()
   })
-
+  // hly:
+  // 通过 unref 和 computed 的组合使用，我们能够确保返回的状态是响应式的、安全的
+  // unref 可以确保无论 instanceRef 是一个普通对象还是一个 ref 对象，都可以正确地获取其内部的值。这种一致性对于兼容性和简化处理逻辑很重要。
+  // 通过 computed 返回状态，能够创建一个封装层，这样外部代码不能直接修改 Popper 实例的内部状态。这保持了组件接口的纯净和稳定。
   return {
     state: computed(() => ({ ...(unref(instanceRef)?.state || {}) })),
     styles: computed(() => unref(states).styles),
