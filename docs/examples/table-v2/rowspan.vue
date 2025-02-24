@@ -43,6 +43,10 @@ const rowSpanIndex = 0
 columns[rowSpanIndex].rowSpan = ({ rowIndex }) =>
   rowIndex % 2 === 0 && rowIndex <= data.length - 2 ? 2 : 1
 
+// hly
+// 还可以这样定义组件的哦
+// 这估计是一个函数式组件，那与defineComponent的区别在哪里
+// 这里传入的参数，是table-v2.tsx组件传给slot row插槽的, cells是vnode数组，Row函数通过cloneVNode改写了第一个即cells[rowSpanIndex]
 const Row = ({ rowData, rowIndex, cells, columns }) => {
   const rowSpan = columns[rowSpanIndex].rowSpan({ rowData, rowIndex })
   if (rowSpan > 1) {

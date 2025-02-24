@@ -1,12 +1,6 @@
 <template>
-  <el-only-child
-    v-if="!virtualTriggering"
-    v-bind="$attrs"
-    :aria-controls="ariaControls"
-    :aria-describedby="ariaDescribedby"
-    :aria-expanded="ariaExpanded"
-    :aria-haspopup="ariaHaspopup"
-  >
+  <el-only-child v-if="!virtualTriggering" v-bind="$attrs" :aria-controls="ariaControls"
+    :aria-describedby="ariaDescribedby" :aria-expanded="ariaExpanded" :aria-haspopup="ariaHaspopup">
     <slot />
   </el-only-child>
 </template>
@@ -22,12 +16,12 @@ import { POPPER_INJECTION_KEY } from './constants'
 import { popperTriggerProps } from './trigger'
 
 import type { WatchStopHandle } from 'vue'
-
+// hly 定义组件的方法可以使用defineOptions
 defineOptions({
   name: 'ElPopperTrigger',
   inheritAttrs: false,
 })
-
+// popperTriggerProps是公共的，在这里可以复用
 const props = defineProps(popperTriggerProps)
 
 const { role, triggerRef } = inject(POPPER_INJECTION_KEY, undefined)!
@@ -69,6 +63,7 @@ const TRIGGER_ELE_EVENTS = [
 ] as const
 
 onMounted(() => {
+  // watch放在onMounted里面，这样在挂载后监听，就不会说立刻执行时，组件为空（还未挂载）
   watch(
     () => props.virtualRef,
     (virtualEl) => {
@@ -87,17 +82,18 @@ onMounted(() => {
       virtualTriggerAriaStopWatch?.()
       virtualTriggerAriaStopWatch = undefined
       if (isElement(el)) {
+        // 给新元素绑定事件监听，给旧元素移除事件监听，学习一下怎么写
         TRIGGER_ELE_EVENTS.forEach((eventName) => {
           const handler = props[eventName]
           if (handler) {
-            ;(el as HTMLElement).addEventListener(
+            ; (el as HTMLElement).addEventListener(
               eventName.slice(2).toLowerCase(),
               handler
             )
-            ;(prevEl as HTMLElement)?.removeEventListener?.(
-              eventName.slice(2).toLowerCase(),
-              handler
-            )
+              ; (prevEl as HTMLElement)?.removeEventListener?.(
+                eventName.slice(2).toLowerCase(),
+                handler
+              )
           }
         })
         if (isFocusable(el as HTMLElement)) {
