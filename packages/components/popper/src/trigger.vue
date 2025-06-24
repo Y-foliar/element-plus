@@ -1,3 +1,4 @@
+<!-- 这个组件要慢慢学习 -->
 <template>
   <el-only-child v-if="!virtualTriggering" v-bind="$attrs" :aria-controls="ariaControls"
     :aria-describedby="ariaDescribedby" :aria-expanded="ariaExpanded" :aria-haspopup="ariaHaspopup">
