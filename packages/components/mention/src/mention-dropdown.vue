@@ -26,12 +26,16 @@
         @mousemove="handleMouseEnter(index)"
         @click.stop="handleSelect(item)"
       >
+        <!-- 也可以slot定制 -->
         <slot name="label" :item="item" :index="index">
+          <!-- 默认的option -->
+          <!-- ?? 空值合并运算符 let result = a ?? b; 如果 a 是 null 或 undefined，则使用 b。|| 会将任何假值（如 0, '', NaN）视为需要替换的情况  -->
           <span>{{ item.label ?? item.value }}</span>
         </slot>
       </li>
     </el-scrollbar>
     <div v-if="loading" :class="ns.be('dropdown', 'loading')">
+      <!-- t 语言类的 -->
       <slot name="loading"> {{ t('el.mention.loading') }} </slot>
     </div>
     <div v-if="$slots.footer" :class="ns.be('dropdown', 'footer')">
@@ -60,9 +64,10 @@ const { t } = useLocale()
 const hoveringIndex = ref(-1)
 
 const scrollbarRef = ref<InstanceType<typeof ElScrollbar>>()
+// 这是个数组Refs
 const optionRefs = ref<HTMLElement[]>()
 const dropdownRef = ref<HTMLElement>()
-
+// 这么写倒是比写在模板里简洁一些
 const optionkls = (item: MentionOption, index: number) => [
   ns.be('dropdown', 'item'),
   ns.is('hovering', hoveringIndex.value === index),
@@ -83,12 +88,12 @@ const filteredAllDisabled = computed(
 )
 
 const hoverOption = computed(() => props.options[hoveringIndex.value])
-
+// 回车键
 const selectHoverOption = () => {
   if (!hoverOption.value) return
   emit('select', hoverOption.value)
 }
-
+// 上下按键
 const navigateOptions = (direction: 'next' | 'prev') => {
   const { options } = props
   if (options.length === 0 || filteredAllDisabled.value) return

@@ -23,10 +23,12 @@ export const useIdInjection = (): ElIdInjectionContext => {
     ? inject(ID_INJECTION_KEY, defaultIdInjection)
     : defaultIdInjection
 }
-
+// deterministicId： 一个确定性的 ID（可能是响应式的），如果提供，它将被直接使用
 export const useId = (deterministicId?: MaybeRef<string>): Ref<string> => {
+  // 获取注入的id, 如果值是defaultIdInjection, 则说明没有注入数据
   const idInjection = useIdInjection()
   if (!isClient && idInjection === defaultIdInjection) {
+    // SSR 环境中需要手动提供 ID
     debugWarn(
       'IdInjection',
       `Looks like you are using server rendering, you must provide a id provider to ensure the hydration process to be succeed

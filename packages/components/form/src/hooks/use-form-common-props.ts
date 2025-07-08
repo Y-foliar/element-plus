@@ -30,12 +30,15 @@ export const useFormSize = (
       ''
   )
 }
-
+// MaybeRef： 在某些情况下，我们希望能够处理一个值，但这个值可能是一个 ref，也可能是一个普通的非响应式值。
 export const useFormDisabled = (fallback?: MaybeRef<boolean | undefined>) => {
   const disabled = useProp<boolean>('disabled')
+  // inject 在抽离的非vue文件的方法中，也可以使用
   const form = inject(formContextKey, undefined)
+  // 这里返回的是一个computed响应式，将根据不同的状态自动更新，这点可以学习
   return computed(
-    () => disabled.value || unref(fallback) || form?.disabled || false
+    // unref 从响应式引用中提取值，无论输入是 ref 还是普通值都可以处理
+    () => disabled.value || unref(fallback) || form?.disabled || false // 组件自身的 disabled 属性 || 传入的备用值 (fallback) || 注入的表单上下文中的 disabled 状态
   )
 }
 

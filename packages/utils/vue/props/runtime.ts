@@ -16,7 +16,7 @@ import type {
 } from './types'
 
 export const epPropKey = '__epPropKey'
-
+// 有点抽象 这是一个简单的箭头函数实现，直接返回传入的 val。其主要目的是通过类型转换，对 val 应用 PropType<T> 的类型约束。
 export const definePropType = <T>(val: any): PropType<T> => val
 
 export const isEpProp = (val: unknown): val is EpProp<any, any, any> =>
@@ -42,6 +42,8 @@ export const isEpProp = (val: unknown): val is EpProp<any, any, any> =>
   } as const)
   @link see more: https://github.com/element-plus/element-plus/pull/3341
  */
+
+// 当使用 buildProp 函数进行处理时，这个属性会被进一步标准化和扩展，以确保它符合某些复杂场景的需求。如上述官方给的例子
 export const buildProp = <
   Type = never,
   Value = never,

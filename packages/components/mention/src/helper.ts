@@ -10,18 +10,76 @@ export const filterOption = (
   const label = option.label || option.value
   return label.toLowerCase().includes(lowerCase)
 }
+/*
+从光标位置开始向左扫描遇到的第一个
 
+输入@123;(光标)@1234;
+end: 4
+pattern: "123"
+prefix: "@"
+prefixIndex: 0
+selectionEnd: 5
+splitIndex: 4
+start: 1
+
+@qqq@123;(光标)@1234;
+end: 8
+pattern: "123"
+prefix: "@"
+prefixIndex: 4
+selectionEnd: 9
+splitIndex: 8
+start: 5
+**/
 export const getMentionCtx = (
   inputEl: HTMLInputElement | HTMLTextAreaElement,
   prefix: string | string[],
   split: string
 ) => {
+  // 增强字符串的处理能力 算法能力
+  // 表示所选文本的结束索引。当没有选择时，这将返回当前文本输入光标位置后紧接着的字符的偏移量。ab(光标)c, 则值为2, abc, 值为3
   const { selectionEnd } = inputEl
   if (selectionEnd === null) return
   const inputValue = inputEl.value
+  // ensureArray把不是array的数据转为array, 比如'@'转为['@']
   const prefixArray = ensureArray(prefix)
   let splitIndex = -1
   let mentionCtx: MentionCtx | undefined
+  /**
+    @qqq@123;@1234;(光标)
+
+    char ; i 14 第一个字符为光标的前一个
+    char 4 i 13
+    char 3 i 12
+    char 2 i 11
+    char 1 i 10
+    char @ i 9
+
+    end: 14
+    pattern: "1234"
+    prefix: "@"
+    prefixIndex: 9
+    selectionEnd: 15
+    splitIndex: 14
+    start: 10
+
+
+    @qqq@123;@1234(光标)
+
+    char 4 i 13
+    char 3 i 12
+    char 2 i 11
+    char 1 i 10
+    char @ i 9
+
+    end: 14
+    pattern: "1234"
+    prefix: "@"
+    prefixIndex: 9
+    selectionEnd: 14
+    splitIndex: -1
+    start: 10
+   * */
   for (let i = selectionEnd - 1; i >= 0; --i) {
     const char = inputValue[i]
     if (char === split || char === '\n' || char === '\r') {
@@ -32,13 +90,13 @@ export const getMentionCtx = (
       const end = splitIndex === -1 ? selectionEnd : splitIndex
       const pattern = inputValue.slice(i + 1, end)
       mentionCtx = {
-        pattern,
-        start: i + 1,
-        end,
-        prefix: char,
-        prefixIndex: i,
-        splitIndex,
-        selectionEnd,
+        pattern, // 匹配到的最后一个prefix后的到spkit之间的字符,  输入 "@JohnDoe"，则 pattern 是 "JohnDoe", 输入 "@123@", 则 pattern 是 "", 输入 "@123@1234;123", 则 pattern 是 "1234",
+        start: i + 1, // pattern开始的下标 (输入框第一位字符的下标是0, 输入 "@123@1234;123", 则 start 是 "5")
+        end, // pattern结束的下标, 输入 "@123@1234;123" 或者"@123@1234", 则 end 都是 "9", 如果光标位于输入末尾且没有分隔符，那么 end 会是整个提及模式的结束处；如果有分隔符，则结束位置会是分隔符的位置。
+        prefix: char, // 识别提及的前缀字符, 如@
+        prefixIndex: i, // 最后一个prefix下标, 输入 "@123@1234;123" 则是 4
+        splitIndex, // 最后一个分隔符下标
+        selectionEnd, // 所选文本的结束索引,如上述描述
       }
       break
     }
@@ -67,6 +125,7 @@ export const getMentionCtx = (
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+// 这里用的是textarea-caret-position的实现
 export const getCursorPosition = (
   element: HTMLInputElement | HTMLTextAreaElement,
   options = {
@@ -130,6 +189,9 @@ export const getCursorPosition = (
   document.body.appendChild(div)
 
   const style = div.style
+  // getComputedStyle 方法在浏览器中用于获取指定元素的计算样式。这些计算样式是由浏览器解析后的最终样式属性值，
+  // 包括了所有应用的 CSS 规则，例如内联样式、内部样式表和外部样式表。
+  // getComputedStyle 是开发者在处理元素样式时的强大工具，尤其是在需要动态读取或计算页面布局信息时。
   const computed = window.getComputedStyle(element)
 
   const isInput = element.nodeName === 'INPUT'
@@ -197,7 +259,9 @@ export const getCursorPosition = (
   span.style.left = `${-element.scrollLeft}px`
   span.style.top = `${-element.scrollTop}px`
   div.appendChild(span)
-
+  // top 值代表了光标（插入符号）顶点到镜像 div 顶部的距离，纵向坐标
+  // left 表示光标（插入符号）相对于文本区域（textarea）或输入框（input）的左边界的水平距离。这是光标所在位置的横向坐标。
+  // 这里height没有用行高，而是字号大小固定乘以1.5的行高
   const relativePosition = {
     top: span.offsetTop + Number.parseInt(computed.borderTopWidth as string),
     left: span.offsetLeft + Number.parseInt(computed.borderLeftWidth as string),
